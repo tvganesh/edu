@@ -82,3 +82,57 @@ lines(m,d$Population.attending.educational.institutions...Persons)
 
 barplot(d$Population.attending.educational.institutions...Persons,names.arg=d$Age.group,col=colors)
 
+ind_dist <- readShapeSpatial("./IND_adm/IND_adm2.shp")
+#ind <- fortify(ind_dist, region = "NAME_1")
+
+###################*******##################################################
+### The snippet below is taken 
+####from http://www.cse.iitb.ac.in/~srirampc/blog/2012/09/21/visualizing_census_data.html
+district_df = ind_dist@data
+tn_dist_df = data.frame(district_df[grep("Tamil",district_df$NAME_1),])
+polygon_list = list()
+for (istr in rownames(tn_dist_df)){
+    i = as.numeric(istr) + 1
+    tmp = ind_dist@polygons[i]
+    polygon_list = c(polygon_list,tmp)
+}
+
+
+# construct a new shape file with only TN's districts
+dist_spatial = SpatialPolygons(polygon_list,1:30)
+dist_spatial_frame = SpatialPolygonsDataFrame(dist_spatial,data=tn_dist_df)
+writeSpatialShape(dist_spatial_frame,"tn_dist_state.shp")
+dist_df = readShapePoly("tn_dist_state.shp")
+#plot(dist_df,add=TRUE) # should print a map of districts in TN
+plot(dist_df)
+###################*******##################################################
+dist <- fortify(dist_df, region = "NAME_2")
+
+tn <- read.csv("tn1.csv")
+a <- filter(tn,Age.group=="All ages")
+b <- filter(a,grepl("District",Area.Name))
+c <- filter(b,Total..Rural..Urban=="Total")
+c$Area.Name <-gsub("District - ","",c$Area.Name)
+c$Area.Name <- gsub("\\d+","",c$Area.Name)
+c$Area.Name <- gsub(" |\\*","",c$Area.Name)
+#ind <- fortify(ind, region = "ST_NAME")
+
+
+m= max(tot)
+n = min(tot)
+mid = (m+n)/2
+
+length(intersect(c$Area.Name,unique(dist$id)))
+setdiff(c$Area.Name,unique(dist$id))
+setdiff(unique(dist$id),c$Area.Name)
+c[c$Area.Name=="TheNilgiris",]$Area.Name = "Nilgiris"
+c[c$Area.Name=="Viluppuram",]$Area.Name = "Villupuram"
+c[c$Area.Name=="Tiruchirappalli",]$Area.Name = "Tiruchchirappalli"
+c[c$Area.Name=="Thoothukkudi",]$Area.Name = "Thoothukudi"
+c[c$Area.Name=="Tirunelveli",]$Area.Name = "Tirunelveli Kattabo"
+
+
+ggplot() + geom_map(data = c, aes(map_id = Area.Name, fill = tot), 
+                    map = dist) + expand_limits(x = dist$long, y = dist$lat) + 
+    scale_fill_gradient2(low = "grey",                                                                           
+                         mid = "light blue", midpoint = mid, high = "blue", limits = c(n, m))
