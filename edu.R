@@ -217,8 +217,16 @@ m[m$Area.Name=="TAMIL NADU",]$Area.Name = "Tamil Nadu"
 m[m$Area.Name=="PONDICHERRY",]$Area.Name = "Pondicherry"
 m[m$Area.Name=="ANDAMAN & NICOBAR ISLANDS",]$Area.Name = "ANDAMAN AND NICOBAR ISLANDS"
 
+i= max(m$LiteratePersons)
+j = min(m$LiteratePersons)
+mid = (i+j)/2
 
-setdiff(m$Area.Name,unique(ind$id))
+ggplot() + geom_map(data = m, aes(map_id = Area.Name, fill = LiteratePersons ), 
+                    map = ind) + expand_limits(x = ind$long, y = ind$lat) + 
+    scale_fill_gradient2(low = "white",                                                                           
+                         mid = "light blue", midpoint = mid, high = "blue", limits = c(j, i))
+
+setdiff(m$Area.Name,unique(ind$id))na
 
 d <- filter(b,Age.group=="All ages" & Total..Rural..Urban=="Urban")
 e <- filter(b,Age.group=="All ages" & Total..Rural..Urban=="Rural")
