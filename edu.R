@@ -3,9 +3,11 @@ library(maptools)
 library(ggplot2)
 library(dplyr)
 library(stringr)
-b <- read.csv("education.csv")
+library(reshape2)
+
+#b <- read.csv("education.csv")
 #colnames(a) <- gsub("Educational.level...","",colnames(a))
-#a <- read.csv("india.csv")
+a <- read.csv("india.csv")
 #write.csv(b,file="india.csv")
 b <- filter(a,Area.Name=="INDIA" & Total..Rural..Urban=="Total")
 # Create a vector
@@ -14,21 +16,19 @@ b <- filter(a,Area.Name=="INDIA" & Total..Rural..Urban=="Total")
 
 # Subset columns with persons
 males <- select(b,matches("Males",ignore.case=FALSE))
-females <- select(c,matches("Females",ignore.case=FALSE))
-persons <- select(c,matches("Persons",ignore.case=FALSE))
+females <- select(b,matches("Females",ignore.case=FALSE))
+persons <- select(b,matches("Persons",ignore.case=FALSE))
 
-j <- males/persons*100
-k <- females/persons*100
 
-age <- b[,8]
+age <- b[,7]
 males <- cbind(age,males)
 
 l <- dim(males)
 
 for(i in 2:l[1]) {
     for(j in 2:l[2]) {
-        print(i)
-        print(j)
+        #print(i)
+        #print(j)
          males[i,j] <- males[i,j]/males[1,j]*100
     }
 }
@@ -180,7 +180,7 @@ m$Area.Name <- gsub("\\d+","",m$Area.Name)
 m$Area.Name <- gsub("[[:space:]]*$","",m$Area.Name)
 
 ind <- readShapeSpatial("./India_SHP/INDIA.shp")
-plot(ind)
+#plot(ind)
 
 ind <- fortify(ind, region = "ST_NAME")
 
@@ -213,7 +213,6 @@ m[m$Area.Name=="WEST BENGAL",]$Area.Name = "West Bengal"
 m[m$Area.Name=="JHARKHAND",]$Area.Name = "Jharkhand"
 
 m[m$Area.Name=="ORISSA",]$Area.Name = "Orissa"
-m[m$Area.Name=="JHARKHAND",]$Area.Name = "Jharkhand"
 m[m$Area.Name=="CHHATTISGARH",]$Area.Name = "Chhattisgarh"
 m[m$Area.Name=="MADHYA PRADESH",]$Area.Name = "Madhya Pradesh"
 
