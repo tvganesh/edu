@@ -145,7 +145,22 @@ c <- filter(b,Age.group=="All ages" & Total..Rural..Urban=="Total")
 l <- c[,5:21]
 #Calculate percentages
 
-m <- l[,7:15]/l[,4]*100
+#m <- l[,7:15]/l[,4]*100
+m <- l[,7:15]
+m[,1] <- l[,7]/l[,4] *100
+m[,2] <- l[,8]/l[,5] *100
+m[,3] <- l[,9]/l[,6] *100
+
+# Illiterate
+m[,4] <- l[,10]/l[,4] *100
+m[,5] <- l[,11]/l[,5] *100
+m[,6] <- l[,12]/l[,6] *100
+
+#Literate
+m[,7] <- l[,13]/l[,4] *100
+m[,8] <- l[,14]/l[,5] *100
+m[,9] <- l[,15]/l[,6] *100
+
 
 #Bind the State column
 m <- cbind(l$Area.Name,m)
@@ -217,14 +232,14 @@ m[m$Area.Name=="TAMIL NADU",]$Area.Name = "Tamil Nadu"
 m[m$Area.Name=="PONDICHERRY",]$Area.Name = "Pondicherry"
 m[m$Area.Name=="ANDAMAN & NICOBAR ISLANDS",]$Area.Name = "ANDAMAN AND NICOBAR ISLANDS"
 
-i= max(m$LiteratePersons)
-j = min(m$LiteratePersons)
+i= max(m$PersonsEdu)
+j = min(m$PersonsEdu)
 mid = (i+j)/2
 
-ggplot() + geom_map(data = m, aes(map_id = Area.Name, fill = LiteratePersons ), 
+ggplot() + geom_map(data = m, aes(map_id = Area.Name, fill = PersonsEdu ), 
                     map = ind) + expand_limits(x = ind$long, y = ind$lat) + 
-    scale_fill_gradient2(low = "white",                                                                           
-                         mid = "light blue", midpoint = mid, high = "blue", limits = c(j, i))
+    scale_fill_gradient2(low = "grey",                                                                           
+                         mid = "blue", midpoint = mid, high = "red", limits = c(j, i))
 
 setdiff(m$Area.Name,unique(ind$id))na
 
