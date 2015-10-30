@@ -186,3 +186,66 @@ bar <- function() {
     
 }
 
+districtEdu <- function(){
+    ind_dist <- readShapeSpatial("./IND_adm/IND_adm2.shp")
+    district_df = ind_dist@data
+    tn_dist_df = data.frame(district_df[grep("Tamil",district_df$NAME_1),])
+    polygon_list = list()
+    for (istr in rownames(tn_dist_df)){
+        i = as.numeric(istr) + 1
+        tmp = ind_dist@polygons[i]
+        polygon_list = c(polygon_list,tmp)
+    }
+    
+    
+    # construct a new shape file with only TN's districts
+    dist_spatial = SpatialPolygons(polygon_list,1:30)
+    dist_spatial_frame = SpatialPolygonsDataFrame(dist_spatial,data=tn_dist_df)
+    writeSpatialShape(dist_spatial_frame,"tn_dist_state.shp")
+    dist_df = readShapePoly("tn_dist_state.shp")
+    #plot(dist_df,add=TRUE) # should print a map of districts in TN
+    plot(dist_df)
+    ###################*******##################################################
+    dist <- fortify(dist_df, region = "NAME_2")
+    
+    tn <- read.csv("tn1.csv")
+    a <- filter(tn,Age.group=="All ages")
+    b <- filter(a,grepl("District",Area.Name))
+    c <- filter(b,Total..Rural..Urban=="Total")
+    c$Area.Name <-gsub("District - ","",c$Area.Name)
+    c$Area.Name <- gsub("\\d+","",c$Area.Name)
+    c$Area.Name <- gsub(" |\\*","",c$Area.Name)
+    #ind <- fortify(ind, region = "ST_NAME")
+    
+    d <- c[,5:13]
+    names(d) <-c("Area.Name","Total..Rural..Urban", "Age.group", "Persons","Males","Females",
+                 "PersonsEdu","MalesEdu", "FemalesEdu")
+    
+    d$PersonsEdu <- d$PersonsEdu/d$Persons * 100
+    d$MalesEdu <- d$MalesEdu/d$Males * 100
+    d$FemalesEdu <- d$FemalesEdu/d$Females * 100
+    m= max(d$PersonsEdu)
+    n = min(d$PersonsEdu)
+    mid = (m+n)/2
+    
+    length(intersect(d$Area.Name,unique(dist$id)))
+    setdiff(d$Area.Name,unique(dist$id))
+    setdiff(unique(dist$id),c$Area.Name)
+    d[d$Area.Name=="TheNilgiris",]$Area.Name = "Nilgiris"
+    d[d$Area.Name=="Viluppuram",]$Area.Name = "Villupuram"
+    d[d$Area.Name=="Tiruchirappalli",]$Area.Name = "Tiruchchirappalli"
+    d[d$Area.Name=="Thoothukkudi",]$Area.Name = "Thoothukudi"
+    d[d$Area.Name=="Tirunelveli",]$Area.Name = "Tirunelveli Kattabo"
+    
+    
+   ggplot() + geom_map(data = d, aes(map_id = Area.Name, fill = d$PersonsEdu),  
+                       ,map = dist,color="black",size=0.25) + 
+          expand_limits(x = dist$long, y = dist$lat) +  
+    scale_fill_distiller(name="Percent", palette = "YlGn")+
+    labs(title="Literacy in state of ")
+
+   
+
+
+}
+
