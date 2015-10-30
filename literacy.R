@@ -4,6 +4,8 @@ library(ggplot2)
 library(dplyr)
 library(stringr)
 library(reshape2)
+library(RColorBrewer)
+
 
 #a <- read.csv("india.csv")
 
@@ -116,10 +118,10 @@ bar <- function() {
     barplot(IndiaFemalesPercent$FemalesEdu,names.arg=IndiaFemalesPercent$Age,col=colors)
     barplot(IndiaPersonsPercent$PersonsEdu,names.arg=IndiaPersonsPercent$Age,col=colors)
     
-   
+    
     
     indiaPersons <- barplot(IndiaPersonsPercent$PersonsEdu,names.arg=IndiaPersonsPercent$Age,
-                       col="white",border=NA)
+                            col="white",border=NA)
     
     with(data=IndiaPersonsPercent,lines(indiaPersons,PersonsEdu,col="black"))
     with(data=IndiaMalesPercent,lines(indiaPersons,MalesEdu,col="blue"))
@@ -203,7 +205,7 @@ districtEdu <- function(){
     dist_spatial_frame = SpatialPolygonsDataFrame(dist_spatial,data=tn_dist_df)
     writeSpatialShape(dist_spatial_frame,"tn_dist_state.shp")
     dist_df = readShapePoly("tn_dist_state.shp")
-    #plot(dist_df,add=TRUE) # should print a map of districts in TN
+    
     plot(dist_df)
     ###################*******##################################################
     dist <- fortify(dist_df, region = "NAME_2")
@@ -238,14 +240,113 @@ districtEdu <- function(){
     d[d$Area.Name=="Tirunelveli",]$Area.Name = "Tirunelveli Kattabo"
     
     
-   ggplot() + geom_map(data = d, aes(map_id = Area.Name, fill = d$PersonsEdu),  
-                       ,map = dist,color="black",size=0.25) + 
-          expand_limits(x = dist$long, y = dist$lat) +  
-    scale_fill_distiller(name="Percent", palette = "YlGn")+
-    labs(title="Literacy in state of ")
+    ggplot() + geom_map(data = d, aes(map_id = Area.Name, fill = d$PersonsEdu),  
+                        ,map = dist,color="black",size=0.25) + 
+        expand_limits(x = dist$long, y = dist$lat) +  
+        scale_fill_distiller(name="Percent", palette = "YlGn")+
+        labs(title="Literacy in state of ")
+    
+    
+    
+    
+}
 
+districtEdu <- function(state){
+    ind_dist <- readShapeSpatial("./IND_adm/IND_adm2.shp")
+    district_df = ind_dist@data
+    state_dist_df = data.frame(district_df[grep(state,district_df$NAME_1),])
+    polygon_list = list()
+    for (istr in rownames(state_dist_df)){
+        i = as.numeric(istr) + 1
+        tmp = ind_dist@polygons[i]
+        polygon_list = c(polygon_list,tmp)
+    }
+    
+    
+    # construct a new shape file with the  districts
+    dist_spatial = SpatialPolygons(polygon_list,1:length(polygon_list))
+    dist_spatial_frame = SpatialPolygonsDataFrame(dist_spatial,data=state_dist_df)
+    shpFile <- paste(state,".shp",sep="")
+    writeSpatialShape(dist_spatial_frame,shpFile)
+    dist_df = readShapePoly(shpFile)
+    
+    plot(dist_df)
+    
+    dist <- fortify(dist_df, region = "NAME_2")
+    
+    csvFile <- paste(state,".csv",sep="")
+    stateData <- read.csv(csvFile)
+    a <- filter(stateData,Age.group=="All ages")
+    b <- filter(a,grepl("District",Area.Name))
+    c <- filter(b,Total..Rural..Urban=="Total")
+    c$Area.Name <-gsub("District - ","",c$Area.Name)
+    c$Area.Name <- gsub("\\d+","",c$Area.Name)
+    c$Area.Name <- gsub(" |\\*","",c$Area.Name)
+  
+    print("Here")
+    
+    d <- c[,5:13]
+    names(d) <-c("Area.Name","Total..Rural..Urban", "Age.group", "Persons","Males","Females",
+                 "PersonsEdu","MalesEdu", "FemalesEdu")
+    
+    d$PersonsEdu <- d$PersonsEdu/d$Persons * 100
+    d$MalesEdu <- d$MalesEdu/d$Males * 100
+    d$FemalesEdu <- d$FemalesEdu/d$Females * 100
+    m= max(d$PersonsEdu)
+    n = min(d$PersonsEdu)
+    mid = (m+n)/2
+    
+    length(intersect(d$Area.Name,unique(dist$id)))
+    setdiff(d$Area.Name,unique(dist$id))
+    setdiff(unique(dist$id),c$Area.Name)
+    
+    if(state == "Tamil Nadu"){
+        d[d$Area.Name=="TheNilgiris",]$Area.Name = "Nilgiris"
+        d[d$Area.Name=="Viluppuram",]$Area.Name = "Villupuram"
+        d[d$Area.Name=="Tiruchirappalli",]$Area.Name = "Tiruchchirappalli"
+        d[d$Area.Name=="Thoothukkudi",]$Area.Name = "Thoothukudi"
+        d[d$Area.Name=="Tirunelveli",]$Area.Name = "Tirunelveli Kattabo"
+    } else if(state == "Kerala"){
+        d[d$Area.Name=="Pathanamthitta",]$Area.Name = "Pattanamtitta"
+    }
+    
+    # Select the districts with lowest literacy
+    m <- head(arrange(d,PersonsEdu),5)
+    lowestLiteracy <- paste(m$Area.Name,"(",round(m$PersonsEdu,1),")",sep="")
+    
+    # Get the min/max latitude and longitude for plotting districts with lowest literacy
+    # This is obtained from the fortified data frame 
+    minLat= min(dist$lat)
+    maxLat =max(dist$lat)
+    minLong = min(dist$long)
+    maxLong = max(dist$long)
+    x = minLong+0.5
+    y= minLat + 1.5
+    # Create a data frame to primt the top 5 ofenders
+    labels <- data.frame(
+        xc = c(x,x,x,x,x), 
+        yc = c(y,y-.2,y-0.4,y-0.6,y-.8), 
+        label = as.vector(lowestLiteracy) 
+        
+    )
    
-
-
+    
+    print("Here1")
+    atitle=paste("Literacy in the state of ", state)
+    print(dim(d))
+    ggplot() + geom_map(data = d, aes(map_id = Area.Name, fill = d$PersonsEdu),  
+                        ,map = dist,color="black",size=0.25) + 
+        expand_limits(x = dist$long, y = dist$lat) +  
+        scale_fill_distiller(name="Percent", palette = "YlGn")+
+        labs(title=atitle)
+    #+
+        #geom_text(aes(label="Bottom 5 districts(literacy)",x,y+0.2),colour="blue")+
+        #geom_text(data = labels, aes(x = xc, y = yc, label = label))+
+        #geom_text(aes(label="Data source:https://data.gov.in",maxLong-1,minLat+0.1)) +
+        #xlab("Longitude") + ylab("Latitude")
+    
+    
+    
+    
 }
 
