@@ -330,10 +330,19 @@ districtEdu <- function(state){
         df[df$Area.Name=="Dhubri",]$Area.Name = "Dhuburi"
         df[df$Area.Name=="KarbiAnglong",]$Area.Name = "Karbi Anglong"
         df[df$Area.Name=="NorthCacharHills",]$Area.Name = "North Cachar Hills"
+    } else if(state == "Bihar") {
+        df[df$Area.Name=="PashchimChamparan",]$Area.Name = "Pashchim Champaran"
+        df[df$Area.Name=="PurbaChamparan",]$Area.Name = "Purba Champaran"
+        df[df$Area.Name=="Kaimur(Bhabua)",]$Area.Name = "Bhabua"
+    } else if(state == "Gujarat") {
+        df[df$Area.Name=="BanasKantha",]$Area.Name = "Banas Kantha"
+        df[df$Area.Name=="SabarKantha",]$Area.Name = "Sabar Kantha"
+        df[df$Area.Name=="PanchMahals",]$Area.Name = "Panch Mahals"
+        df[df$Area.Name=="Dohad",]$Area.Name = "Dahod"
+        df[df$Area.Name=="TheDangs",]$Area.Name = "The Dangs"
+    } else if(state == "Chhattisgarh") {
+        df[df$Area.Name=="Rajnandgaon",]$Area.Name = "Raj Nandgaon"
     }
-        
-    
-    
     # Select the districts with lowest literacy
     m <- head(arrange(df,PersonsEdu),5)
     lowestLiteracy <- paste(m$Area.Name,"(",round(m$PersonsEdu,1),")",sep="")
