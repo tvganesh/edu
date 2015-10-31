@@ -267,16 +267,18 @@ districtEdu <- function(state){
     # construct a new shape file with the  districts
     dist_spatial = SpatialPolygons(polygon_list,1:length(polygon_list))
     dist_spatial_frame = SpatialPolygonsDataFrame(dist_spatial,data=state_dist_df)
-    shpFile <- paste(state,".shp",sep="")
-    writeSpatialShape(dist_spatial_frame,shpFile)
-    dist_df = readShapePoly(shpFile)
+    shpFile <- paste( state,".shp",sep="")
+    districtDir <- paste("./district/",shpFile,sep="")
+    writeSpatialShape(dist_spatial_frame,districtDir)
+    dist_df = readShapePoly(districtDir)
     
     plot(dist_df)
     
     dist <- fortify(dist_df, region = "NAME_2")
     
     csvFile <- paste(state,".csv",sep="")
-    stateData <- read.csv(csvFile)
+    csvDir <- paste("./data/",csvFile,sep="")
+    stateData <- read.csv(csvDir)
     a <- filter(stateData,Age.group=="All ages")
     b <- filter(a,grepl("District",Area.Name))
     c <- filter(b,Total..Rural..Urban=="Total")
@@ -313,7 +315,24 @@ districtEdu <- function(state){
         df[df$Area.Name=="Visakhapatnam",]$Area.Name = "Vishakhapatnam"
         df[df$Area.Name=="EastGodavari",]$Area.Name = "East Godavari"
         df[df$Area.Name=="WestGodavari",]$Area.Name = "West Godavari"
+    } else if(state == "Arunachal Pradesh"){
+        df[df$Area.Name=="WestKameng",]$Area.Name = "West Kameng"
+        df[df$Area.Name=="EastKameng",]$Area.Name = "East Kameng"
+        df[df$Area.Name=="PapumPare",]$Area.Name = "Papum Pare"
+        df[df$Area.Name=="LowerSubansiri",]$Area.Name = "Lower Subansiri"
+        df[df$Area.Name=="UpperSubansiri",]$Area.Name = "Upper Subansiri"
+        df[df$Area.Name=="WestSiang",]$Area.Name = "West Siang"
+        df[df$Area.Name=="EastSiang",]$Area.Name = "East Siang"
+        df[df$Area.Name=="UpperSiang",]$Area.Name = "Upper Siang"
+        df[df$Area.Name=="DibangValley",]$Area.Name = "DibangValley"
+    
+    } else if(state == "Assam"){
+        df[df$Area.Name=="Dhubri",]$Area.Name = "Dhuburi"
+        df[df$Area.Name=="KarbiAnglong",]$Area.Name = "Karbi Anglong"
+        df[df$Area.Name=="NorthCacharHills",]$Area.Name = "North Cachar Hills"
     }
+        
+    
     
     # Select the districts with lowest literacy
     m <- head(arrange(df,PersonsEdu),5)
