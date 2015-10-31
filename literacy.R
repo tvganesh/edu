@@ -252,6 +252,7 @@ districtEdu <- function(){
 }
 
 districtEdu <- function(state){
+
     ind_dist <- readShapeSpatial("./IND_adm/IND_adm2.shp")
     district_df = ind_dist@data
     state_dist_df = data.frame(district_df[grep(state,district_df$NAME_1),])
@@ -284,34 +285,38 @@ districtEdu <- function(state){
     c$Area.Name <- gsub(" |\\*","",c$Area.Name)
   
     print("Here")
-    
-    d <- c[,5:13]
-    names(d) <-c("Area.Name","Total..Rural..Urban", "Age.group", "Persons","Males","Females",
+    df <- NULL
+    df <- c[,5:13]
+    names(df) <-c("Area.Name","Total..Rural..Urban", "Age.group", "Persons","Males","Females",
                  "PersonsEdu","MalesEdu", "FemalesEdu")
     
-    d$PersonsEdu <- d$PersonsEdu/d$Persons * 100
-    d$MalesEdu <- d$MalesEdu/d$Males * 100
-    d$FemalesEdu <- d$FemalesEdu/d$Females * 100
-    m= max(d$PersonsEdu)
-    n = min(d$PersonsEdu)
+    df$PersonsEdu <- df$PersonsEdu/df$Persons * 100
+    df$MalesEdu <- df$MalesEdu/df$Males * 100
+    df$FemalesEdu <- df$FemalesEdu/df$Females * 100
+    m= max(df$PersonsEdu)
+    n = min(df$PersonsEdu)
     mid = (m+n)/2
     
-    length(intersect(d$Area.Name,unique(dist$id)))
-    setdiff(d$Area.Name,unique(dist$id))
-    setdiff(unique(dist$id),c$Area.Name)
+    length(intersect(df$Area.Name,unique(dist$id)))
+    setdiff(df$Area.Name,unique(dist$id))
+    setdiff(unique(dist$id),df$Area.Name)
     
     if(state == "Tamil Nadu"){
-        d[d$Area.Name=="TheNilgiris",]$Area.Name = "Nilgiris"
-        d[d$Area.Name=="Viluppuram",]$Area.Name = "Villupuram"
-        d[d$Area.Name=="Tiruchirappalli",]$Area.Name = "Tiruchchirappalli"
-        d[d$Area.Name=="Thoothukkudi",]$Area.Name = "Thoothukudi"
-        d[d$Area.Name=="Tirunelveli",]$Area.Name = "Tirunelveli Kattabo"
+        df[df$Area.Name=="TheNilgiris",]$Area.Name = "Nilgiris"
+        df[df$Area.Name=="Viluppuram",]$Area.Name = "Villupuram"
+        df[df$Area.Name=="Tiruchirappalli",]$Area.Name = "Tiruchchirappalli"
+        df[df$Area.Name=="Thoothukkudi",]$Area.Name = "Thoothukudi"
+        df[df$Area.Name=="Tirunelveli",]$Area.Name = "Tirunelveli Kattabo"
     } else if(state == "Kerala"){
-        d[d$Area.Name=="Pathanamthitta",]$Area.Name = "Pattanamtitta"
+        df[df$Area.Name=="Pathanamthitta",]$Area.Name = "Pattanamtitta"
+    } else if(state == "Andhra Pradesh"){
+        df[df$Area.Name=="Visakhapatnam",]$Area.Name = "Vishakhapatnam"
+        df[df$Area.Name=="EastGodavari",]$Area.Name = "East Godavari"
+        df[df$Area.Name=="WestGodavari",]$Area.Name = "West Godavari"
     }
     
     # Select the districts with lowest literacy
-    m <- head(arrange(d,PersonsEdu),5)
+    m <- head(arrange(df,PersonsEdu),5)
     lowestLiteracy <- paste(m$Area.Name,"(",round(m$PersonsEdu,1),")",sep="")
     
     # Get the min/max latitude and longitude for plotting districts with lowest literacy
@@ -321,7 +326,7 @@ districtEdu <- function(state){
     minLong = min(dist$long)
     maxLong = max(dist$long)
     x = minLong+0.5
-    y= minLat + 1.5
+    y= minLat + 1.0
     # Create a data frame to primt the top 5 ofenders
     labels <- data.frame(
         xc = c(x,x,x,x,x), 
@@ -333,17 +338,18 @@ districtEdu <- function(state){
     
     print("Here1")
     atitle=paste("Literacy in the state of ", state)
-    print(dim(d))
-    ggplot() + geom_map(data = d, aes(map_id = Area.Name, fill = d$PersonsEdu),  
+    print(dim(df))
+    print(df$PersonsEdu)
+    ggplot() + geom_map(data = df, aes(map_id = Area.Name, fill = PersonsEdu),  
                         ,map = dist,color="black",size=0.25) + 
         expand_limits(x = dist$long, y = dist$lat) +  
         scale_fill_distiller(name="Percent", palette = "YlGn")+
-        labs(title=atitle)
-    #+
-        #geom_text(aes(label="Bottom 5 districts(literacy)",x,y+0.2),colour="blue")+
-        #geom_text(data = labels, aes(x = xc, y = yc, label = label))+
+        labs(title=atitle)+
+    
+        #geom_text(aes(label="Bottom 5 districts(literacy)",x+1,y+0.2),colour="blue")+
+        geom_text(data = labels, aes(x = xc, y = yc, label = label))+
         #geom_text(aes(label="Data source:https://data.gov.in",maxLong-1,minLat+0.1)) +
-        #xlab("Longitude") + ylab("Latitude")
+        xlab("Longitude") + ylab("Latitude")
     
     
     
