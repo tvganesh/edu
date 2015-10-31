@@ -381,9 +381,45 @@ districtEdu <- function(state){
         df[df$Area.Name=="Sonapur",]$Area.Name = "Sonepur"
         df[df$Area.Name=="Balangir",]$Area.Name = "Bolangir"
         df[df$Area.Name=="Nabarangapur",]$Area.Name = "Nabarangpur"
+    } else if(state == "Punjab") {
+        df[df$Area.Name=="Nawanshahr",]$Area.Name = "Nawan Shehar"
+        df[df$Area.Name=="FatehgarhSahib",]$Area.Name = "Fatehgarh Sahib"
+    } else if(state == "Punjab") {
+        df[df$Area.Name=="SawaiMadhopur",]$Area.Name = "Sawai Madhopur"
+    } else if(state == "Uttar Pradesh") {
+        df[df$Area.Name=="JyotibaPhuleNagar",]$Area.Name = "Jyotiba Phule Nagar"
+        df[df$Area.Name=="GautamBuddhaNagar",]$Area.Name = "Gautam Buddha Nagar"
+        df[df$Area.Name=="Budaun",]$Area.Name = "Badaun"
+        df[df$Area.Name=="Kheri",]$Area.Name = "Lakhimpur Kheri"
+        df[df$Area.Name=="RaeBareli",]$Area.Name = "Rae Bareli"
+        df[df$Area.Name=="KanpurDehat",]$Area.Name = "Kanpur Dehat"
+        df[df$Area.Name=="KanpurNagar",]$Area.Name = "Kanpur"
+        df[df$Area.Name=="Barabanki",]$Area.Name = "Bara Banki"
+        df[df$Area.Name=="AmbedkarNagar",]$Area.Name = "Ambedkar Nagar"
+        df[df$Area.Name=="Shrawasti",]$Area.Name = "Shravasti"
+        df[df$Area.Name=="Siddharthnagar",]$Area.Name = "Siddharth Nagar"
+        df[df$Area.Name=="SantKabirNagar",]$Area.Name = "Sant Kabir Nagar"
+        df[df$Area.Name=="SantRavidasNagar",]$Area.Name = "Sant Ravi Das Nagar"
+        
+    } else if(state == "Uttaranchal") {
+        df[df$Area.Name=="Rudraprayag",]$Area.Name = "Rudra Prayag"
+        df[df$Area.Name=="TehriGarhwal",]$Area.Name = "Tehri Garhwal"
+        df[df$Area.Name=="Dehradun",]$Area.Name = "Dehra Dun"
+        df[df$Area.Name=="Garhwal",]$Area.Name = "Pauri Garhwal"
+        df[df$Area.Name=="Nainital",]$Area.Name = "Naini Tal" 
+        df[df$Area.Name=="UdhamSinghNagar",]$Area.Name = "Udham Singh Nagar"
+        df[df$Area.Name=="Hardwar",]$Area.Name = "Haridwar"
+    } else if(state == "West Bengal") {
+        df[df$Area.Name=="KochBihar",]$Area.Name = "Kochbihar"
+        df[df$Area.Name=="UttarDinajpur",]$Area.Name = "Uttar Dinajpu"
+        df[df$Area.Name=="DakshinDinajpur",]$Area.Name = "Dakshin Dinajpur"
+        df[df$Area.Name=="NorthTwentyFourParganas",]$Area.Name = "North 24 Parganas"
+        df[df$Area.Name=="SouthTwentyFourParganas",]$Area.Name = "South 24 Parganas"
+        df[df$Area.Name=="Medinipur",]$Area.Name = "West Midnapore"
     }
     
-    # Select the districts with lowest literacy
+        
+        # Select the districts with lowest literacy
     m <- head(arrange(df,PersonsEdu),5)
     lowestLiteracy <- paste(m$Area.Name,"(",round(m$PersonsEdu,1),")",sep="")
     
